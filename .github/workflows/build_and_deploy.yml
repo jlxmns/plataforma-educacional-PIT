@@ -2,17 +2,13 @@ name: Build and Deploy
 
 on:
   push:
-    branches:
-      - develop
-      - 'release-*'
-      - main
+    branches: [develop, 'release-*', main]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,19 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set environment
-        id: env
+      - name: Set lowercase image name
+        id: image
         run: |
-          if [[ $GITHUB_REF == refs/heads/main ]]; then
-            echo "environment=production" >> $GITHUB_OUTPUT
-            echo "url=https://app.production.com" >> $GITHUB_OUTPUT
-          elif [[ $GITHUB_REF == refs/heads/release-* ]]; then
-            echo "environment=staging" >> $GITHUB_OUTPUT
-            echo "url=https://app.staging.com" >> $GITHUB_OUTPUT
-          else
-            echo "environment=development" >> $GITHUB_OUTPUT
-            echo "url=https://app.dev.com" >> $GITHUB_OUTPUT
-          fi
+          echo "name=$(echo 'ghcr.io/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -50,27 +37,41 @@ jobs:
         with:
           context: .
           load: true
-          tags: ghcr.io/jlxmns/plataforma-educacional-pit:test
+          tags: ${{ steps.image.outputs.name }}:test  # ✅ Usa lowercase
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run tests in container
+      - name: Test Docker image
+        env:
+          TEST_IMAGE: ${{ steps.image.outputs.name }}:test  # ✅ Usa lowercase
         run: |
           docker compose -f docker-compose.test.yml up --abort-on-container-exit
           docker compose -f docker-compose.test.yml down
 
-      - name: Build and Push final image
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ $GITHUB_REF == refs/heads/main ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF == refs/heads/release-* ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push final image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:${{ steps.env.outputs.environment }}
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:latest
           cache-from: type=gha
 
       - name: Deploy to ${{ steps.env.outputs.environment }}
         run: |
-          echo "Deploying to ${{ steps.env.outputs.environment }}"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.environment }}"
-          echo "URL: ${{ steps.env.outputs.url }}"
+          echo "Deploying image: ${{ steps.image.outputs.name }}:${{ steps.env.outputs.environment }}"
+          echo "Environment: ${{ steps.env.outputs.environment }}"
+          echo "SHA: ${{ github.sha }}"

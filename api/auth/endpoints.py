@@ -1,14 +1,14 @@
 from django.contrib.auth.hashers import check_password
 from ninja import Router
-from ninja.errors import HttpError
 
-from api.auth.schemas import UserSchemaOut, LoginSchemaIn
+from api.auth.schemas import LoginSchemaIn, UserSchemaOut
 from api.models import AuthToken
 from core.models import User
 
 auth_router = Router()
 
-@auth_router.get('/user', response={200: UserSchemaOut, 401: dict})
+
+@auth_router.get("/user", response={200: UserSchemaOut, 401: dict})
 def get_auth_user(request):
     user = request.auth
     if not user:
@@ -16,13 +16,15 @@ def get_auth_user(request):
 
     return 200, user
 
-@auth_router.get('/token', response={201: str, 401: dict})
+
+@auth_router.get("/token", response={201: str, 401: dict})
 def get_auth_token(request):
     user = request.auth
     if not user:
         return 401, {"error": "Invalid or missing token"}
 
     return 201, user.token
+
 
 @auth_router.post("/login", response={200: dict, 401: dict}, auth=None)
 def login(request, payload: LoginSchemaIn):

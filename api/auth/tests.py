@@ -1,7 +1,10 @@
-from django.test import TestCase, Client
+import json
+
+from django.test import Client, TestCase
 
 from api.models import AuthToken
 from api.tests import TestHelper
+
 
 class AuthTestCase(TestCase):
     def setUp(self):
@@ -14,14 +17,14 @@ class GetAuthUserTests(AuthTestCase):
     def setUp(self):
         super().setUp()
         self.url = "/api/auth/user"
-        
+
     def test_get_auth_user_success(self):
         """Test successfully retrieving authenticated user information"""
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['email'], self.user.email)
-        self.assertEqual(response.json()['name'], self.user.name)
+        self.assertEqual(response.json()["email"], self.user.email)
+        self.assertEqual(response.json()["name"], self.user.name)
 
     def test_get_auth_user_without_token(self):
         """Test that endpoint returns 401 when no authentication token is provided"""
@@ -46,8 +49,8 @@ class GetAuthUserTests(AuthTestCase):
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
-        self.assertIn('email', response_data)
-        self.assertIn('name', response_data)
+        self.assertIn("email", response_data)
+        self.assertIn("name", response_data)
 
     def test_get_auth_user_with_deleted_token(self):
         """Test that endpoint returns 401 when user's token has been deleted"""
@@ -62,7 +65,7 @@ class GetAuthTokenTests(AuthTestCase):
     def setUp(self):
         super().setUp()
         self.url = "/api/auth/token"
-        
+
     def test_get_auth_token_success(self):
         """Test successfully retrieving authenticated user's token"""
         response = self.client.get(self.url)
@@ -124,9 +127,6 @@ class GetAuthTokenTests(AuthTestCase):
         self.assertEqual(token1, token2)
 
 
-import json
-from django.test import TestCase, Client
-
 class LoginTests(AuthTestCase):
     def setUp(self):
         super().setUp()
@@ -138,15 +138,15 @@ class LoginTests(AuthTestCase):
         response = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
-        self.assertIn('token', response_data)
-        self.assertIsInstance(response_data['token'], str)
-        self.assertTrue(len(response_data['token']) > 0)
+        self.assertIn("token", response_data)
+        self.assertIsInstance(response_data["token"], str)
+        self.assertTrue(len(response_data["token"]) > 0)
 
     def test_login_returns_existing_token(self):
         """Test that login returns the existing token for a user"""
@@ -155,48 +155,50 @@ class LoginTests(AuthTestCase):
         response = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
-        self.assertEqual(response_data['token'], existing_token.key)
+        self.assertEqual(response_data["token"], existing_token.key)
 
     def test_login_with_invalid_password(self):
         """Test login fails with incorrect password"""
         response = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": "wrongpassword"}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 401)
         response_data = response.json()
 
-        self.assertIn('error', response_data)
-        self.assertEqual(response_data['error'], "Invalid email or password.")
+        self.assertIn("error", response_data)
+        self.assertEqual(response_data["error"], "Invalid email or password.")
 
     def test_login_with_nonexistent_email(self):
         """Test login fails with non-existent email"""
         response = self.client.post(
             self.url,
-            data=json.dumps({"email": "nonexistent@example.com", "password": self.password}),
-            content_type='application/json'
+            data=json.dumps(
+                {"email": "nonexistent@example.com", "password": self.password}
+            ),
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 401)
         response_data = response.json()
 
-        self.assertIn('error', response_data)
-        self.assertEqual(response_data['error'], "Invalid email or password.")
+        self.assertIn("error", response_data)
+        self.assertEqual(response_data["error"], "Invalid email or password.")
 
     def test_login_with_empty_email(self):
         """Test login fails with empty email"""
         response = self.client.post(
             self.url,
             data=json.dumps({"email": "", "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 401)
@@ -206,7 +208,7 @@ class LoginTests(AuthTestCase):
         response = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": ""}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 401)
@@ -218,13 +220,13 @@ class LoginTests(AuthTestCase):
         response = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 
-        self.assertIn('token', response_data)
+        self.assertIn("token", response_data)
         token_exists = AuthToken.objects.filter(user=self.user).exists()
         self.assertTrue(token_exists)
 
@@ -232,8 +234,10 @@ class LoginTests(AuthTestCase):
         """Test that email matching is case-sensitive"""
         response = self.client.post(
             self.url,
-            data=json.dumps({"email": self.user.email.upper(), "password": self.password}),
-            content_type='application/json'
+            data=json.dumps(
+                {"email": self.user.email.upper(), "password": self.password}
+            ),
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 401)
@@ -243,19 +247,19 @@ class LoginTests(AuthTestCase):
         response1 = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
         response2 = self.client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response2.status_code, 200)
 
-        token1 = response1.json()['token']
-        token2 = response2.json()['token']
+        token1 = response1.json()["token"]
+        token2 = response2.json()["token"]
 
         self.assertEqual(token1, token2)
 
@@ -265,7 +269,7 @@ class LoginTests(AuthTestCase):
         response = unauthenticated_client.post(
             self.url,
             data=json.dumps({"email": self.user.email, "password": self.password}),
-            content_type='application/json'
+            content_type="application/json",
         )
 
         self.assertEqual(response.status_code, 200)

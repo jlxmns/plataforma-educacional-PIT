@@ -50,7 +50,7 @@ jobs:
         with:
           context: .
           load: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+          tags: ghcr.io/jlxmns/plataforma-educacional-pit:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

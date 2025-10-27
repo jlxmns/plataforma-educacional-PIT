@@ -3,12 +3,14 @@ import os
 
 from django.db import models
 
-from ProjetoInterdisciplinar1 import settings
 from core.models import AuditedModel
+from ProjetoInterdisciplinar1 import settings
 
 
 class AuthToken(AuditedModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tokens')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tokens"
+    )
     key = models.CharField(max_length=40, unique=True, db_index=True)
 
     def __str__(self):

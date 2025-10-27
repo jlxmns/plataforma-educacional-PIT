@@ -5,7 +5,7 @@ from django.db import models
 class UserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         if not email:
-            raise ValueError('Email is required')
+            raise ValueError("Email is required")
         email = self.normalize_email(email)
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
@@ -15,9 +15,9 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, name, password=None, **extra_fields):
         from api.models import AuthToken
 
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('role', User.Role.ADMIN)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("role", User.Role.ADMIN)
 
         user = self.create_user(email, name, password, **extra_fields)
         AuthToken.objects.create(user=user)
@@ -33,9 +33,7 @@ class User(AbstractUser):
     username = None
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    role = models.CharField(
-        max_length=255, choices=Role.choices, default=Role.CUSTOMER
-    )
+    role = models.CharField(max_length=255, choices=Role.choices, default=Role.CUSTOMER)
 
     objects = UserManager()
 

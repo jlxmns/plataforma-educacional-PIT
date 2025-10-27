@@ -12,7 +12,7 @@ services:
       retries: 5
 
   test:
-    image: ghcr.io/${{ github.repository }}:test
+    image: ghcr.io/jlxmns/plataforma-educacional-pit:test
     command: sh -c "python manage.py migrate && python manage.py test"
     environment:
       - DB_NAME=test_db

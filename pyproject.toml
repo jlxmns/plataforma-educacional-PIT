@@ -16,6 +16,10 @@ dependencies = [
 [tool.ruff]
 fix = true
 line-length = 88
+
+exclude = ["**/migrations"]
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -30,7 +34,6 @@ ignore = [
     "B008", # do not perform function calls in argument defaults
     "C901", # too complex
 ]
-exclude = ["**/migrations"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

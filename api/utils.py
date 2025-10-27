@@ -2,8 +2,8 @@ from ninja.security import APIKeyHeader
 
 from api.models import AuthToken
 
-
 # AUTH
+
 
 class ApiKey(APIKeyHeader):
     param_name = "X-API-Key"

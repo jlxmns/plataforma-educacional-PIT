@@ -61,7 +61,8 @@ jobs:
           DB_HOST: localhost
           DB_PORT: 5432
           SECRET_KEY: test-secret-key-for-ci
-          DEBUG: True
+          DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1
         run: |
           python manage.py migrate
           python manage.py test

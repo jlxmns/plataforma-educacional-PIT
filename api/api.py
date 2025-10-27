@@ -1,15 +1,17 @@
 from ninja import NinjaAPI
 
 from api.auth.endpoints import auth_router
-from api.utils import ApiKey, AdminApiKey
+from api.utils import AdminApiKey, ApiKey
 
 header_key = ApiKey()
 admin_header_key = AdminApiKey()
 
+# Testing CI/CD
+
 description = f"""
 An API for the Educational Platform.
 
-The auth works by checking if the provided `{header_key.param_name}` exists in the database. 
+The auth works by checking if the provided `{header_key.param_name}` exists in the database.
 """
 
 api = NinjaAPI(

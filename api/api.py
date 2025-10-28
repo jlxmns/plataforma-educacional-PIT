@@ -6,7 +6,7 @@ from api.utils import AdminApiKey, ApiKey
 header_key = ApiKey()
 admin_header_key = AdminApiKey()
 
-# Testing CI/CD
+#Testing CI/CD
 
 description = f"""
 An API for the Educational Platform.
